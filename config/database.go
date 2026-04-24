@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+// DB adalah instance koneksi database global
 var DB *gorm.DB
 
 // ConnectDatabase menghubungkan aplikasi ke database PostgreSQL
@@ -27,13 +28,13 @@ func ConnectDatabase() {
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logger.Warn), // Hanya tampilkan warning & error di production
 	})
 	if err != nil {
 		log.Fatalf("Gagal koneksi ke database: %v", err)
 	}
 
-	log.Println("✅ Berhasil terhubung ke database PostgreSQL")
+	log.Println("Berhasil terhubung ke database PostgreSQL")
 }
 
 // getEnv mengambil environment variable atau return default value

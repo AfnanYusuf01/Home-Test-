@@ -1,55 +1,64 @@
 package service
 
 import (
-	"errors"
-
+	"github.com/AfnanYusuf01/take-home-test/helpers"
 	"github.com/AfnanYusuf01/take-home-test/models"
 	"github.com/AfnanYusuf01/take-home-test/repository"
 )
 
-// GetAllTransaksi mengambil semua transaksi
+// GetAllTransaksi mengambil semua transaksi beserta relasi User dan PaketData
 func GetAllTransaksi() ([]models.Transaksi, error) {
-	return repository.GetAllTransaksi()
-}
-
-// GetTransaksiByID mengambil transaksi berdasarkan ID
-func GetTransaksiByID(id uint) (models.Transaksi, error) {
-	return repository.GetTransaksiByID(id)
-}
-
-// CreateTransaksi membuat transaksi baru dengan validasi
-func CreateTransaksi(req models.CreateTransaksiRequest) (models.Transaksi, error) {
-	if req.UserID == 0 {
-		return models.Transaksi{}, errors.New("user_id tidak boleh kosong")
-	}
-	if req.PaketDataID == 0 {
-		return models.Transaksi{}, errors.New("paket_data_id tidak boleh kosong")
-	}
-
-	// Cek apakah user ada
-	_, err := repository.GetUserByID(req.UserID)
+	transaksi, err := repository.GetAllTransaksi()
 	if err != nil {
-		return models.Transaksi{}, errors.New("user tidak ditemukan")
+		return nil, helpers.NewInternalError("Gagal mengambil data transaksi")
+	}
+	return transaksi, nil
+}
+
+// GetTransaksiByID mengambil transaksi berdasarkan ID beserta relasi
+func GetTransaksiByID(id uint) (models.Transaksi, error) {
+	transaksi, err := repository.GetTransaksiByID(id)
+	if err != nil {
+		return models.Transaksi{}, helpers.NewNotFoundError("Transaksi dengan ID tersebut tidak ditemukan")
+	}
+	return transaksi, nil
+}
+
+// CreateTransaksi membuat transaksi baru (user membeli paket data).
+// Harga otomatis diambil dari paket data saat transaksi dibuat.
+// Hanya user dan paket data yang aktif (belum di-soft-delete) yang bisa digunakan.
+func CreateTransaksi(req models.CreateTransaksiRequest) (models.Transaksi, error) {
+	if err := helpers.ValidateStruct(req); err != nil {
+		return models.Transaksi{}, err
 	}
 
-	// Cek apakah paket data ada dan ambil harganya
+	// Cek apakah user ada dan masih aktif (belum di-soft-delete)
+	if _, err := repository.GetUserByID(req.UserID); err != nil {
+		return models.Transaksi{}, helpers.NewNotFoundError("User dengan ID tersebut tidak ditemukan atau sudah tidak aktif")
+	}
+
+	// Cek apakah paket data ada dan masih aktif, sekaligus ambil harganya
 	paketData, err := repository.GetPaketDataByID(req.PaketDataID)
 	if err != nil {
-		return models.Transaksi{}, errors.New("paket data tidak ditemukan")
+		return models.Transaksi{}, helpers.NewNotFoundError("Paket data dengan ID tersebut tidak ditemukan atau sudah tidak aktif")
 	}
 
-	// Buat transaksi dengan harga saat ini dari paket data
+	// Buat transaksi — harga otomatis diambil dari paket data saat ini
 	transaksi := models.Transaksi{
 		UserID:      req.UserID,
 		PaketDataID: req.PaketDataID,
 		Price:       paketData.Price,
 	}
 
-	err = repository.CreateTransaksi(&transaksi)
-	if err != nil {
-		return models.Transaksi{}, err
+	if err := repository.CreateTransaksi(&transaksi); err != nil {
+		return models.Transaksi{}, helpers.NewInternalError("Gagal membuat transaksi")
 	}
 
-	// Ambil transaksi lengkap dengan relasi
-	return repository.GetTransaksiByID(transaksi.ID)
+	// Ambil transaksi lengkap dengan relasi User dan PaketData
+	result, err := repository.GetTransaksiByID(transaksi.ID)
+	if err != nil {
+		return models.Transaksi{}, helpers.NewInternalError("Transaksi berhasil dibuat tetapi gagal mengambil detail")
+	}
+
+	return result, nil
 }

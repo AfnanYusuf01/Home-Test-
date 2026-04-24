@@ -1,65 +1,90 @@
 package service
 
 import (
-	"errors"
+	"strings"
 
+	"github.com/AfnanYusuf01/take-home-test/helpers"
 	"github.com/AfnanYusuf01/take-home-test/models"
 	"github.com/AfnanYusuf01/take-home-test/repository"
 )
 
-// GetAllUsers mengambil semua user
+// GetAllUsers mengambil semua user aktif (yang belum di-soft-delete)
 func GetAllUsers() ([]models.User, error) {
-	return repository.GetAllUsers()
+	users, err := repository.GetAllUsers()
+	if err != nil {
+		return nil, helpers.NewInternalError("Gagal mengambil data user")
+	}
+	return users, nil
 }
 
-// GetUserByID mengambil user berdasarkan ID
+// GetUserByID mengambil user aktif berdasarkan ID
 func GetUserByID(id uint) (models.User, error) {
-	return repository.GetUserByID(id)
+	user, err := repository.GetUserByID(id)
+	if err != nil {
+		return models.User{}, helpers.NewNotFoundError("User dengan ID tersebut tidak ditemukan")
+	}
+	return user, nil
 }
 
 // CreateUser membuat user baru dengan validasi
 func CreateUser(req models.CreateUserRequest) (models.User, error) {
-	if req.Name == "" {
-		return models.User{}, errors.New("nama tidak boleh kosong")
-	}
-	if req.PhoneNumber == "" {
-		return models.User{}, errors.New("nomor telepon tidak boleh kosong")
+	if err := helpers.ValidateStruct(req); err != nil {
+		return models.User{}, err
 	}
 
 	user := models.User{
-		Name:        req.Name,
-		PhoneNumber: req.PhoneNumber,
+		Name:        strings.TrimSpace(req.Name),
+		PhoneNumber: strings.TrimSpace(req.PhoneNumber),
 	}
 
-	err := repository.CreateUser(&user)
-	return user, err
+	if err := repository.CreateUser(&user); err != nil {
+		if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "23505") {
+			return models.User{}, helpers.NewConflictError("Nomor telepon sudah digunakan oleh user lain")
+		}
+		return models.User{}, helpers.NewInternalError("Gagal membuat user")
+	}
+
+	return user, nil
 }
 
-// UpdateUser mengupdate data user dengan validasi
+// UpdateUser mengupdate data user dengan validasi partial update
 func UpdateUser(id uint, req models.UpdateUserRequest) (models.User, error) {
+	if err := helpers.ValidateStruct(req); err != nil {
+		return models.User{}, err
+	}
+
 	user, err := repository.GetUserByID(id)
 	if err != nil {
-		return models.User{}, errors.New("user tidak ditemukan")
+		return models.User{}, helpers.NewNotFoundError("User dengan ID tersebut tidak ditemukan")
 	}
 
 	if req.Name != "" {
-		user.Name = req.Name
+		user.Name = strings.TrimSpace(req.Name)
 	}
 	if req.PhoneNumber != "" {
-		user.PhoneNumber = req.PhoneNumber
+		user.PhoneNumber = strings.TrimSpace(req.PhoneNumber)
 	}
 
-	err = repository.UpdateUser(&user)
-	return user, err
+	if err := repository.UpdateUser(&user); err != nil {
+		if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "23505") {
+			return models.User{}, helpers.NewConflictError("Nomor telepon sudah digunakan oleh user lain")
+		}
+		return models.User{}, helpers.NewInternalError("Gagal mengupdate user")
+	}
+
+	return user, nil
 }
 
-// DeleteUser menghapus user berdasarkan ID
+// DeleteUser melakukan soft delete pada user berdasarkan ID.
+// Data transaksi historis tetap tersimpan untuk keperluan audit.
 func DeleteUser(id uint) error {
-	// Cek apakah user ada
-	_, err := repository.GetUserByID(id)
-	if err != nil {
-		return errors.New("user tidak ditemukan")
+	if _, err := repository.GetUserByID(id); err != nil {
+		return helpers.NewNotFoundError("User dengan ID tersebut tidak ditemukan")
 	}
 
-	return repository.DeleteUser(id)
+	if err := repository.DeleteUser(id); err != nil {
+		return helpers.NewInternalError("Gagal menghapus user")
+	}
+
+	return nil
 }

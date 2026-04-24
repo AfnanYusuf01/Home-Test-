@@ -1,57 +1,64 @@
 package service
 
 import (
-	"errors"
+	"strings"
 
+	"github.com/AfnanYusuf01/take-home-test/helpers"
 	"github.com/AfnanYusuf01/take-home-test/models"
 	"github.com/AfnanYusuf01/take-home-test/repository"
 )
 
-// GetAllPaketData mengambil semua paket data
+// GetAllPaketData mengambil semua paket data aktif (yang belum di-soft-delete)
 func GetAllPaketData() ([]models.PaketData, error) {
-	return repository.GetAllPaketData()
+	paketData, err := repository.GetAllPaketData()
+	if err != nil {
+		return nil, helpers.NewInternalError("Gagal mengambil data paket data")
+	}
+	return paketData, nil
 }
 
-// GetPaketDataByID mengambil paket data berdasarkan ID
+// GetPaketDataByID mengambil paket data aktif berdasarkan ID
 func GetPaketDataByID(id uint) (models.PaketData, error) {
-	return repository.GetPaketDataByID(id)
+	paketData, err := repository.GetPaketDataByID(id)
+	if err != nil {
+		return models.PaketData{}, helpers.NewNotFoundError("Paket data dengan ID tersebut tidak ditemukan")
+	}
+	return paketData, nil
 }
 
 // CreatePaketData membuat paket data baru dengan validasi
 func CreatePaketData(req models.CreatePaketDataRequest) (models.PaketData, error) {
-	if req.Name == "" {
-		return models.PaketData{}, errors.New("nama paket tidak boleh kosong")
-	}
-	if req.Price <= 0 {
-		return models.PaketData{}, errors.New("harga harus lebih dari 0")
-	}
-	if req.Quota <= 0 {
-		return models.PaketData{}, errors.New("kuota harus lebih dari 0")
-	}
-	if req.ActivePeriod <= 0 {
-		return models.PaketData{}, errors.New("masa aktif harus lebih dari 0")
+	if err := helpers.ValidateStruct(req); err != nil {
+		return models.PaketData{}, err
 	}
 
 	paketData := models.PaketData{
-		Name:         req.Name,
+		Name:         strings.TrimSpace(req.Name),
 		Price:        req.Price,
 		Quota:        req.Quota,
 		ActivePeriod: req.ActivePeriod,
 	}
 
-	err := repository.CreatePaketData(&paketData)
-	return paketData, err
+	if err := repository.CreatePaketData(&paketData); err != nil {
+		return models.PaketData{}, helpers.NewInternalError("Gagal membuat paket data")
+	}
+
+	return paketData, nil
 }
 
-// UpdatePaketData mengupdate data paket data dengan validasi
+// UpdatePaketData mengupdate data paket data dengan validasi partial update
 func UpdatePaketData(id uint, req models.UpdatePaketDataRequest) (models.PaketData, error) {
+	if err := helpers.ValidateStruct(req); err != nil {
+		return models.PaketData{}, err
+	}
+
 	paketData, err := repository.GetPaketDataByID(id)
 	if err != nil {
-		return models.PaketData{}, errors.New("paket data tidak ditemukan")
+		return models.PaketData{}, helpers.NewNotFoundError("Paket data dengan ID tersebut tidak ditemukan")
 	}
 
 	if req.Name != "" {
-		paketData.Name = req.Name
+		paketData.Name = strings.TrimSpace(req.Name)
 	}
 	if req.Price > 0 {
 		paketData.Price = req.Price
@@ -63,17 +70,23 @@ func UpdatePaketData(id uint, req models.UpdatePaketDataRequest) (models.PaketDa
 		paketData.ActivePeriod = req.ActivePeriod
 	}
 
-	err = repository.UpdatePaketData(&paketData)
-	return paketData, err
-}
-
-// DeletePaketData menghapus paket data berdasarkan ID
-func DeletePaketData(id uint) error {
-	// Cek apakah paket data ada
-	_, err := repository.GetPaketDataByID(id)
-	if err != nil {
-		return errors.New("paket data tidak ditemukan")
+	if err := repository.UpdatePaketData(&paketData); err != nil {
+		return models.PaketData{}, helpers.NewInternalError("Gagal mengupdate paket data")
 	}
 
-	return repository.DeletePaketData(id)
+	return paketData, nil
+}
+
+// DeletePaketData melakukan soft delete pada paket data berdasarkan ID.
+// Data transaksi historis tetap tersimpan untuk keperluan audit.
+func DeletePaketData(id uint) error {
+	if _, err := repository.GetPaketDataByID(id); err != nil {
+		return helpers.NewNotFoundError("Paket data dengan ID tersebut tidak ditemukan")
+	}
+
+	if err := repository.DeletePaketData(id); err != nil {
+		return helpers.NewInternalError("Gagal menghapus paket data")
+	}
+
+	return nil
 }
