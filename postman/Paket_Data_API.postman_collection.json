@@ -1,0 +1,250 @@
+{
+	"info": {
+		"name": "Paket Data API",
+		"description": "REST API untuk pengelolaan pembelian Paket Data",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api"
+		}
+	],
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Afnan Yusuf\",\n    \"phone_number\": \"081234567890\"\n}"
+						},
+						"url": {"raw": "{{base_url}}/users", "host": ["{{base_url}}"], "path": ["users"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "Created",
+							"code": 201,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"User berhasil dibuat\",\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"Afnan Yusuf\",\n        \"phone_number\": \"081234567890\",\n        \"created_at\": \"2026-04-25T00:00:00+07:00\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "{{base_url}}/users", "host": ["{{base_url}}"], "path": ["users"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"Berhasil mengambil semua data user\",\n    \"data\": []\n}"
+						}
+					]
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "{{base_url}}/users/1", "host": ["{{base_url}}"], "path": ["users", "1"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"Berhasil mengambil data user\",\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"Afnan Yusuf\",\n        \"phone_number\": \"081234567890\",\n        \"created_at\": \"2026-04-25T00:00:00+07:00\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Afnan Updated\",\n    \"phone_number\": \"089876543210\"\n}"
+						},
+						"url": {"raw": "{{base_url}}/users/1", "host": ["{{base_url}}"], "path": ["users", "1"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"User berhasil diupdate\",\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"Afnan Updated\",\n        \"phone_number\": \"089876543210\",\n        \"created_at\": \"2026-04-25T00:00:00+07:00\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{base_url}}/users/1", "host": ["{{base_url}}"], "path": ["users", "1"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"User berhasil dihapus\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Paket Data",
+			"item": [
+				{
+					"name": "Create Paket Data",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Paket Internet 10GB\",\n    \"price\": 50000,\n    \"quota\": 10,\n    \"active_period\": 30\n}"
+						},
+						"url": {"raw": "{{base_url}}/paket-data", "host": ["{{base_url}}"], "path": ["paket-data"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "Created",
+							"code": 201,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"Paket data berhasil dibuat\",\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"Paket Internet 10GB\",\n        \"price\": 50000,\n        \"quota\": 10,\n        \"active_period\": 30\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get All Paket Data",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "{{base_url}}/paket-data", "host": ["{{base_url}}"], "path": ["paket-data"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"Berhasil mengambil semua data paket data\",\n    \"data\": []\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Paket Data by ID",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "{{base_url}}/paket-data/1", "host": ["{{base_url}}"], "path": ["paket-data", "1"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"Berhasil mengambil data paket data\",\n    \"data\": {\n        \"id\": 1,\n        \"name\": \"Paket Internet 10GB\",\n        \"price\": 50000,\n        \"quota\": 10,\n        \"active_period\": 30\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Paket Data",
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Paket Internet 25GB\",\n    \"price\": 99000,\n    \"quota\": 25,\n    \"active_period\": 30\n}"
+						},
+						"url": {"raw": "{{base_url}}/paket-data/1", "host": ["{{base_url}}"], "path": ["paket-data", "1"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"Paket data berhasil diupdate\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Paket Data",
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{base_url}}/paket-data/1", "host": ["{{base_url}}"], "path": ["paket-data", "1"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"Paket data berhasil dihapus\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Transaksi",
+			"item": [
+				{
+					"name": "Create Transaksi",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": 1,\n    \"paket_data_id\": 1\n}"
+						},
+						"url": {"raw": "{{base_url}}/transaksi", "host": ["{{base_url}}"], "path": ["transaksi"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "Created",
+							"code": 201,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"Transaksi berhasil dibuat\",\n    \"data\": {\n        \"id\": 1,\n        \"user_id\": 1,\n        \"paket_data_id\": 1,\n        \"price\": 50000,\n        \"created_at\": \"2026-04-25T00:00:00+07:00\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get All Transaksi",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "{{base_url}}/transaksi", "host": ["{{base_url}}"], "path": ["transaksi"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"Berhasil mengambil semua data transaksi\",\n    \"data\": []\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Transaksi by ID",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "{{base_url}}/transaksi/1", "host": ["{{base_url}}"], "path": ["transaksi", "1"]}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"Berhasil mengambil data transaksi\",\n    \"data\": {\n        \"id\": 1,\n        \"user_id\": 1,\n        \"paket_data_id\": 1,\n        \"price\": 50000,\n        \"created_at\": \"2026-04-25T00:00:00+07:00\"\n    }\n}"
+						}
+					]
+				}
+			]
+		}
+	]
+}

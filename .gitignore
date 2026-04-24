@@ -1,0 +1,21 @@
+# Environment
+.env
+
+# Binary
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+tmp/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
