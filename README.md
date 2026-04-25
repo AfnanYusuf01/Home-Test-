@@ -52,8 +52,8 @@ Request → Handler → Service → Repository → Database
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/AfnanYusuf01/-Take-Home-Test-.git
-cd -Take-Home-Test-
+git clone https://github.com/AfnanYusuf01/Home-Test-.git
+cd Home-Test-
 ```
 
 ### 2. Setup Database
